@@ -1,0 +1,30 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: neptask-redis
+
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-neptask}
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+    command: >
+      sh -c "redis-server
+      --requirepass $$REDIS_PASSWORD
+      --appendonly yes
+      --maxmemory-policy allkeys-lru"
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-neptask}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis_data:
